@@ -1,16 +1,19 @@
 import random
+import sys
+from random import randint
 import math
-from sklearn.cluster import KMeans
-import os
+import matplotlib.pyplot as plt
+import numpy as np
+import matplotlib.cm as cm
 
-
-NUM_CLUSTERS = 2
-LOWEST_SAMPLE_POINT = 0 #element 0 of SAMPLES.
-HIGHEST_SAMPLE_POINT = 3 #element 3 of SAMPLES.
-BIG_NUMBER = math.pow(10, 10)
+K = 2 
+MIN_RAND_VALUE = 0
+MAX_RAND_VALUE = 100
 
 dataPoints = []
 centroids = []
+MAX_ITERATION = 50000
+NUM_DATA_VALUES = 7
 
 
 class DataPoint:
@@ -54,32 +57,22 @@ class Centroid:
         return self.y
 
 
-def initializeCentroids(dataSet):
+def initializeCentroids():
     
-    centroids.append(Centroid(dataSet[LOWEST_SAMPLE_POINT][0],dataSet[LOWEST_SAMPLE_POINT][1]))
-    centroids.append(Centroid(dataSet[HIGHEST_SAMPLE_POINT][0],dataSet[HIGHEST_SAMPLE_POINT][1]))
-    
-    print("Centroids initialized at:")
-    print("(%d,%d)" %(centroids[0].getX(), centroids[0].getY()) )
-  #  print("({},{})", .format(centroids[1].getX(),centroids[1].getY()) )
-    print("(%d,%d)" %(centroids[1].getX(), centroids[1].getY()) )
-    print
-    return
+    centroids.append(Centroid(2,2))
+    centroids.append(Centroid(4,4))    
+    #for i in range (K):	
+    	#centroids.append(Centroid(random.uniform(MIN_RAND_VALUE,MAX_RAND_VALUE),  random.uniform(MIN_RAND_VALUE,MAX_RAND_VALUE)))
+    #return
 
-def initializeDataPoints(dataSet):
-    
-    for i in range(len(dataSet)):
-        
-        newPoint = DataPoint( dataSet[i][0], dataSet[i][1] )
-        
-        if(i == LOWEST_SAMPLE_POINT):
-            newPoint.setCluster(0)
-        elif(i == HIGHEST_SAMPLE_POINT):
-            newPoint.setCluster(1)
-        else:
-            newPoint.setCluster(None)
-
+def initializeDataPoints():
+    bla = [[1.0, 1.0], [1.5, 2.0], [3.0, 4.0], [5.0, 7.0], [3.5, 5.0], [4.5, 5.0], [3.5, 4.5]]
+    for i in range(NUM_DATA_VALUES):
+        #newPoint = DataPoint( random.uniform(MIN_RAND_VALUE,MAX_RAND_VALUE), random.uniform(MIN_RAND_VALUE,MAX_RAND_VALUE) )
+        newPoint = DataPoint( bla[i][0],bla[i][1])
+        newPoint.setCluster( random.randint(0,K-1) ) 
         dataPoints.append(newPoint)    
+    
     return
 
 def getEuclideanDistance(x1, y1, x2, y2):
@@ -90,7 +83,7 @@ def recalculateCentroids():
     totalY = 0
     totalInCluster = 0
     
-    for j in range(NUM_CLUSTERS):    
+    for j in range(K):    
         for k in range(len(dataPoints)):
             if (dataPoints[k].getCluster() == j ):
                 totalX += dataPoints[k].getX()
@@ -107,16 +100,13 @@ def updateClusters():
     assignmentChanged = 0
     
     for i in range(len(dataPoints)):
-        bestMinimum = BIG_NUMBER
+        bestMinimum = sys.float_info.max
         currentCluster = dataPoints[i].getCluster() 
-        for j in range(NUM_CLUSTERS):
+        for j in range(K):
             curDistance = getEuclideanDistance(dataPoints[i].getX(),dataPoints[i].getY(),centroids[j].getX(),centroids[j].getY())
             if(curDistance < bestMinimum):
                 bestMinimum = curDistance
                 currentCluster = j 
-                    
-                
-        dataPoints[i].setCluster(currentCluster)      
     
         if( (dataPoints[i].getCluster != currentCluster) ):
             dataPoints[i].setCluster(currentCluster)
@@ -125,37 +115,46 @@ def updateClusters():
     return assignmentChanged
 
 
-def performKMeans(dataSet):
-    
-    DATASET_SIZE = len(dataSet)
-    print("Size: %d" %DATASET_SIZE)
+def performKMeans():
     
     assignmentChanged = 1
     print("Start initializing k-Means")
     
-    initializeCentroids(dataSet)
-    initializeDataPoints(dataSet)
+    initializeCentroids()
+    initializeDataPoints()
     
     print("Start k-Means calculation")
-    while(assignmentChanged):
-        recalculateCentroids()
-        assignmentChanged = updateClusters() 
+    i = 0
+    while(assignmentChanged and i < MAX_ITERATION  ):
+        assignmentChanged = updateClusters()
+	recalculateCentroids() 
+	print("assigmentChanged %d:"  %assignmentChanged)
+	i = i + 1	
     return
 
 
 def printResults():
-    for i in range(NUM_CLUSTERS):
+    print("Cluster")
+    x = np.arange(10)
+    ys = [i+x+(i*x)**2 for i in range(10)]
+    colors = iter(cm.rainbow(np.linspace(0, 1, len(ys))))
+    for i in range(K):
         print("Cluster ", i, " includes:")
+	X = []
+	Y = []
         for j in range(len(dataPoints)):
             if(dataPoints[j].getCluster() == i):
                 print("(", dataPoints[j].getX(), ", ", dataPoints[j].getY(), ")")
+		X.append( dataPoints[j].getX())
+		Y.append( dataPoints[j].getY())
         print()
-    
+        nextColor = next(colors)
+    	plt.scatter(X,Y,color=nextColor)
+        plt.scatter(centroids[i].getX(),centroids[i].getY(),marker=">",color=nextColor, s = 50)
+    plt.show()   
     return
-
-print os.__file__
-kmeans = KMeans(4, random_state=8)
-Y_hat = kmeans.fit(X).labels_
-#dataSet = [[1.0,1.0], [1.5,2.0], [3.0,4.0], [5.0,7.0], [3.5,5.0], [4.5,5.0], [3.5,4.5]]
-#performKMeans(dataSet)
-#printResults()
+print("start")
+performKMeans()
+print("end")
+printResults()
+print("end print")
