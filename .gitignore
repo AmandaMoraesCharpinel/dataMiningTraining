@@ -2,11 +2,12 @@
 
 *.DS_Store
 .DS_Store
-
+.DS_Store/
 # R stuff
-.Rapp.history^
+.Rapp.history
+.Rhistory
 
-# quizes
+# quizes and assignments
 quizes/
 coursera/gettingAndCleaningData/quizes/*
 
