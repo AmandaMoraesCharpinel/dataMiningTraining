@@ -7,7 +7,7 @@
 .Rapp.history^
 
 # quizes
-*/quizes/*
+quizes/
 coursera/gettingAndCleaningData/quizes/*
 
 # Byte-compiled / optimized / DLL files
