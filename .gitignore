@@ -1,7 +1,14 @@
 # mac stuff
 
-.DS_Store
 *.DS_Store
+.DS_Store
+
+# R stuff
+.Rapp.history^
+
+# quizes
+*/quizes/*
+coursera/gettingAndCleaningData/quizes/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
