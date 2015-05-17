@@ -1,0 +1,47 @@
+# prob 1
+CLT lecture --> N(mu,sigma^2/n)
+
+# prob 2 
+pnorm(70,80,10) --> 15,8%
+
+# prob 3
+qnorm(0.95,1100,75)
+[1] 1223.364
+
+# prob 4
+prob4<- choose(5,4)*0.5^4*(1-0.5)^1
+prob5<- choose(5,5)*0.5^5*(1-0.5)^0
+answ5<- prob4+prob5
+round(answ5,2)
+--> 0.19
+
+# prob 5
+mean<-1100
+sd<-75
+n<-100
+# standard error of the mean
+var<- sd / sqrt(n)
+qnorm(0.95,1100,sde)
+# or
+quantile<-1.645
+mean+(var*quantile)
+--> 1112
+
+# prob 6
+# RDI between 14 and 16
+# see CLT  (X_n - mu) / (omega / sqrt(n))
+mean6<- 15
+sd6<- 10
+value6a<- (14-mean6)/(sd6/sqrt(100))
+p14<-pnorm(value6a)
+value6b<- (16-mean6)/(sd6/sqrt(100))
+p16<-pnorm(value6b)
+answ6<-p16-p14
+-->0.68
+
+# prob 7
+o.5
+
+# prob 8
+ppois(10,lambda=5*3) = 0.118
+

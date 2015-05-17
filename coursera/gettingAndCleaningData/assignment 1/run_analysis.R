@@ -22,7 +22,7 @@ run_analysis<-function()
   
   colNames<-read.table(file=fileColNames) 
 
-  # Appropriately labels the data set with descriptive variable names. 
+  #  
   colnames(xTrainDt)<-colNames[[2]]
   colnames(xTestDt)<-colNames[[2]]
   colnames(yTrainDt)<-c("labelID")
@@ -49,7 +49,7 @@ run_analysis<-function()
   #  Uses descriptive activity names to name the activities in the data set
   cleanData<-merge(cleanData,activityLabels)
  
-  write.table(cleanData,"./result.txt")
+  write.table(cleanData,"./result.txt", row.name=FALSE)
 
 }
 

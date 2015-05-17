@@ -1,0 +1,94 @@
+---
+title: "Analysis of tooth grow data"
+author: "Jens Schreiber"
+date: "16. Mai 2015"
+output: html_document
+---
+The folloing executive summary shall analyze the ToothGrowth data in the R datasets package. 
+
+###Load the ToothGrowth data and perform some basic exploratory data analyses 
+
+First we load the data:
+
+```{r,cache=TRUE}
+  library(datasets)
+```
+
+With the following command
+
+```{r}
+  ?ToothGrowth
+```
+
+we get description: "The response is the length of odontoblasts (teeth) in each of 10 guinea pigs at each of three dose levels of Vitamin C (0.5, 1, and 2 mg) with each of two delivery methods (orange juice or ascorbic acid)."
+
+Furthermore the dataset has the following three variables:
+
++ len	as the numeric	Tooth length
++ supp as the factor for the Supplement type (VC or OJ).
++ dose as the Dose in milligrams.
+
+```{r,cache=TRUE}
+  qplot(dose, len, data=ToothGrowth, shape=supp, color=supp,main="",
+   xlab="Dose", ylab="Tooth length")  
+```
+
+Using a boxplot it is possible to show the relation between the different vitamin levels and the length of the tooth grow.
+
+```{r,cache=TRUE}
+  library(ggplot2)
+  ggplot(ToothGrowth, aes(x=factor(dose), y=len, fill=factor(dose)))+
+  geom_boxplot()+
+  facet_grid(.~supp)+
+  ggtitle("ToothGrowth data in relation to dose factor")
+```
+
+
+The plot shows that for both supplements VC and OJ and a with higher dose value the pigs tend to have longer tooths.
+
+###Provide a basic summary of the data.
+
+```{r,cache=TRUE}
+  head(ToothGrowth)
+  summary(ToothGrowth)
+```
+
+###Use confidence intervals and/or hypothesis tests to compare tooth growth by supp and dose. (Only use the techniques from class, even if there's other approaches worth considering)
+
+
+```{r,cache=TRUE}
+  vcToothLen<-ToothGrowth[ToothGrowth$supp=="VC",]$len
+  ojToothLen<-ToothGrowth[ToothGrowth$supp=="OJ",]$len
+  t.test( ojToothLen,vcToothLen , paired=TRUE,alternative="less",var.equal=FALSE)
+```
+With  the previous command we checked whether the mean of the values contained in the vector ojToothLen is less  of the mean of the values contained in the vector vcToothLen. In response, we obtained a p-value well above 0.05, which leads us to conclude that we can reject the null hypothesis H0 in favor of the alternative hypothesis H1: vcToothLen is substantial bigger thant ojToothLen.
+
+
+```{r,cache=TRUE}
+  t.test(len~supp, data=ToothGrowth, paired=FALSE)
+```
+
+
+
+```{r,cache=TRUE}
+  dose1<-subset(ToothGrowth, dose==0.5 )
+  dose2<-subset(ToothGrowth, dose==1.0 )
+  dose3<-subset(ToothGrowth, dose==2.0 )
+```
+
+
+```{r,cache=TRUE}
+  t.test(len~supp, data=dose1, paired=FALSE)
+  t.test(len~supp, data=dose2, paired=FALSE)
+  t.test(len~supp, data=dose3, paired=FALSE)
+```
+
+
+
+###State your conclusions and the assumptions needed for your conclusions. 
+
+```{r, echo=FALSE}
+
+```
+
+
