@@ -1,5 +1,5 @@
 ---
-title: "Exponential distribution"
+title: "Sample means from an exponential distribution and its behaviour towards CLT"
 author: "Jens Schreiber"
 date: "16. Mai 2015"
 output:
@@ -8,8 +8,12 @@ output:
     keep_tex: yes
   word_document: default
 ---
+In this report the exponetial function is investigated and compared to its behaviour towards the Central Limit Theorem (CLT). The CLT states that when we take averages of Independent and Identical Distributed variables, the averages become that of a normal distribution as sample size increases. If we consider $\bar{X}_n$ as the  continuously created sample means of the exponential function then it is approximately $N(\mu,\sigma^2 / n)$ under the CLT, where $\sigma^2 / n$ is the standard error. 
 
-The rate parameter lambda for all simulations is set to:
+For the simulation to show the behaviour of sample means of the exponetial function
+we will calcluate the mean from $n=40$ samples of an exponetial function using the function "rexp" of the R programming langues. This will be done $1000$ times and then its characteristics is investigated. For simulations we use $\lambda=0.2$.
+
+The following R code set-up's the required parameters:
 ```{r,cache=TRUE}
   lambda = 0.2
   meanTheor  <- 1/lambda
@@ -19,70 +23,79 @@ The rate parameter lambda for all simulations is set to:
   nrSim <- 1000
 ```
 
+Please note that for the exponential function the mean is $1/\lambda$ and the standard deviations is $1/\lambda$. 
 
+### Simulation
+In order to show the CLT with the exponential function we create $n=40$ samples with $\lambda=0.2$, attach its mean to the sampleMean vector and do this $1000$ times. In the following code. For convenience we store the data the sampleData frame in the last step.
 
-##Illustrate via simulation and associated explanatory text the properties of the distribution of the mean of 40 exponentials.  You should
-
-### 1. Show the sample mean and compare it to the theoretical mean of the distribution.
-
-```{r,cache=TRUE}
+```{r}
+  set.seed(42)
   sampleMeans = NULL
-  for (i in 1 : nrSim) sampleMeans = c(sampleMeans, mean(rexp(n, lambda) ))
+  for (i in 1 : nrSim) sampleMeans = c(sampleMeans, mean(rexp(n, lambda)))
   sampleData<-data.frame(sampleMeans)
+````
+
+### Comparison of theoretical and sample mean
+
+The folloing R code creates an histogram of the simulated data and plot their theoretical (in blue) and their sample mean (in red) with dashed line. 
+```{r,cache=TRUE}
+  library(ggplot2)
   ggplot(sampleData, aes(x=sampleMeans)) + 
   # Histogram with count on y-axis
-  geom_histogram(aes(y = ..density..),binwidth=.5, colour="black", fill="white") +  
+  geom_histogram(aes(y = ..density..),  binwidth=.5, colour="black", fill="white") +  
   # line of sample mean
   geom_vline(aes(xintercept=mean(sampleMeans, na.rm=T)),  color="red", linetype="dashed", size=1) +
   # line of theoretical mean
   geom_vline(aes(xintercept=meanTheor),  color="blue", linetype="dashed", size=1)  
 ```
 
-Theoretical mean:
-```{r, cache=TRUE}
-  meanTheor
-```
-Calculated sample mean:
-```{r, cache=TRUE}
-  mean(sampleData$sampleMeans)
-```
-
-
-
-### 2. Show how variable the sample is (via variance) and compare it to the theoretical variance of the distribution.
-
-```{r,cache=TRUE}
-  sampleVars = NULL
-  for (i in 1 : nrSim) sampleVars = c(sampleVars, var(rexp(n, lambda) ))
-  sampleData<-data.frame(sampleVars)
-  ggplot(sampleData, aes(x=sampleVars)) + 
-  # Histogram with count on y-axis
-  geom_histogram(aes(y = ..density..),binwidth=.5, colour="black", fill="white") +  
-  # line of sample mean
-  geom_vline(aes(xintercept=mean(sampleVars, na.rm=T)),  color="red", linetype="dashed", size=1) +
-  # line of theoretical mean
-  geom_vline(aes(xintercept=varTheor),  color="blue", linetype="dashed", size=1)  
-```
-
-Theoretical variance:
-```{r, cache=TRUE}
-  varTheor
-```
-Calculated sample variance:
-```{r, cache=TRUE}
-  mean(varTheor)
-```
-
-
-### 3. Show that the distribution is approximately normal.
-
+However their theoretical and sample mean are so close to eachother it is hard to distinguish them. The theoretical mean is $5.0$ and depending on the simulation the sample mean is somewhat around $5.0$. In most cases the sample mean is around $5.02$ which is realy close to the theoretical mean.
 
 ```{r, cache=TRUE}
-qqnorm(sampleMeans)
-qqline(sampleMeans)
-qqnorm(sampleVars)
-qqline(sampleVars)
+  c(meanTheor,mean(sampleData$sampleMeans))
 ```
+
+
+### Comparision of theoretical varaince and the variance of the distribution.
+The theoretical variance or lets rather say the approximated variance is just the variance of the sample distribution from which we create our sample means divided by the the number of created samples. (Note: It doesn't matter if we do $1000$ simulations it will always be the same value.) So the theoretical variance is given by: 
+```{r, cache=TRUE}
+  varTheor / n
+```
+
+Which is really close to our actual value of our sample means:
+
+```{r, cache=TRUE}
+  var(sampleData$sampleMeans)
+```
+
+Again, the acutual result depends upon the simulation and will be different each time we run the simulatiion, but most of the time the deviation between the two values is between $0.01$ and $0.02$.
+
+
+### Test whether the distribution is approximately normal
+
+In this section we want to show that the created distribution of sample means from the exponential fuction is approximately normal. One argument is a comparision of the samples of an exponential function (simulated by "rexp(nrSim,lambda)") and the the sample means of an exponential function. For the latter samples we use the previously simulated data.
+
+```{r,  echo=FALSE}
+  set.seed(42)
+  par(mfrow = c(1, 2),oma=c(0,0,2,0))
+  hist( rexp(nrSim,lambda) ,xlab="Samples of exponential function", main="")                
+  hist( sampleData$sampleMeans, xlab="Sample means of exponential function", main="")
+```
+
+In the comparison of the two plots, we see that the samples of the exponential function follow obviously a exponential shaped distribution, where the simulated creates a bell shaped histogramm simular to that of a normal distribution.
+
+Furthermore we can use the following Q-Q-Plot to show its approximated normal distribution:
+
+```{r, cache=TRUE}
+  qqnorm(sampleMeans)
+  qqline(sampleMeans)
+```
+
+This kind of plots, in general, can be used to compare quantiles of different distributions. Here we specifically want to compare the quantiles of the normal distribution to that of our sample mean distribution. With the "qqline" function we add a line to the plot of the theoretical normal distributuon. That's why if the sample mean distribtion is approximated normal distributed all sample quantiles should be situated on the line. 
+
+At least between quantiles $-2$ and $1$ or $1.5$ the former mentioned conditions holds true, so we can expect the distribution to be approximately normal distributed. 
+
+Also we can compare the distribution of a large collection of random exponentials and the distribution of a large collection of averages of 40 exponentials, our simulated sample means.
 
 
 

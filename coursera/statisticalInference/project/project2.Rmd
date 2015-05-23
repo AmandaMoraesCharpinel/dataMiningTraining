@@ -29,8 +29,9 @@ Furthermore the dataset has the following three variables:
 + dose as the Dose in milligrams.
 
 ```{r,cache=TRUE}
+  library(ggplot2)
   qplot(dose, len, data=ToothGrowth, shape=supp, color=supp,main="",
-   xlab="Dose", ylab="Tooth length")  
+  xlab="Dose", ylab="Tooth length")  
 ```
 
 Using a boxplot it is possible to show the relation between the different vitamin levels and the length of the tooth grow.
