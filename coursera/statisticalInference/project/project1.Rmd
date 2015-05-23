@@ -93,12 +93,7 @@ Furthermore we can use the following Q-Q-Plot to show its approximated normal di
 
 This kind of plots, in general, can be used to compare quantiles of different distributions. Here we specifically want to compare the quantiles of the normal distribution to that of our sample mean distribution. With the "qqline" function we add a line to the plot of the theoretical normal distributuon. That's why if the sample mean distribtion is approximated normal distributed all sample quantiles should be situated on the line. 
 
-At least between quantiles $-2$ and $1$ or $1.5$ the former mentioned conditions holds true, so we can expect the distribution to be approximately normal distributed. 
-
-Also we can compare the distribution of a large collection of random exponentials and the distribution of a large collection of averages of 40 exponentials, our simulated sample means.
-
-
-
+At least between quantiles -2 and 1 or 1.5 the former mentioned conditions holds true, so we can expect the distribution to be approximately normal distributed. 
 
 <!-- In this project you will investigate the exponential distribution in R and compare it with the Central Limit Theorem. The exponential distribution can be simulated in R with rexp(n, lambda) where lambda is the rate parameter. The mean of exponential distribution is 1/lambda and the standard deviation is also 1/lambda. Set lambda = 0.2 for all of the simulations. You will investigate the distribution of averages of 40 exponentials. Note that you will need to do a thousand simulations.
 
