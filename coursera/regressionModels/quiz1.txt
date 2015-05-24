@@ -1,0 +1,140 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1344\cocoasubrtf720
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fnil\fcharset0 HelveticaNeue;\f2\fnil\fcharset0 Consolas;
+\f3\fnil\fcharset0 Monaco;}
+{\colortbl;\red255\green255\blue255;\red38\green38\blue38;\red255\green255\blue255;\red43\green39\blue19;
+\red234\green234\blue234;\red210\green0\blue53;\red245\green245\blue247;\red242\green242\blue242;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\f0\fs24 \cf0 # prob1 \'97> falsch\
+sum(x*w)/sum(w)\
+\pard\pardeftab720\sl420
+
+\f1\fs28 \cf2 \cb3 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 One way you can convert this problem to the problem solved in the lectures is consider the weight vector as the number of times each x value is repeated.
+\f2\fs26 \cf4 \cb5 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec4 \
+
+\f1\fs28 \cf2 \cb3 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 indeed, calculate a weighted sum, and divide by 
+\f3\fs24 \cf6 \cb7 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec6 sum(weights)
+\f0 \cf0 \cb1 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+\cf0 \
+# prob 2 \'97> falsch\
+\pard\pardeftab720\sl420
+
+\f3 \cf2 \cb8 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 x <- c(0.8, 0.47, 0.51, 0.73, 0.36, 0.58, 0.57, 0.85, 0.44, 0.42)\
+y <- c(1.39, 0.72, 1.55, 0.48, 1.19, -1.59, 1.23, -0.65, 1.49, 0.05)
+\fs26 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\f0\fs24 \cf0 \cb1 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 lm(y~x-1)\
+\
+\
+\
+or:\
+\
+Call:\
+lm(formula = x ~ y)\
+\
+Coefficients:\
+(Intercept)            y  \
+    0.59915     -0.04462  \
+\
+# prob 3\
+ data(mtcars)\
+# zweite parameter wird genutzt als predictor\
+ coef(lm(mpg ~ wt,mtcars))\
+\'97> -5.344\
+\
+\
+\
+Call:\
+lm(formula = mpg ~ wt, data = mtcars)\
+\
+Coefficients:\
+(Intercept)           wt  \
+     37.285       -5.344\
+\
+# prob 4\
+X = predictor Y = outcome\
+Sd(x) = 0.5 Sd(Y) Cor(Y,X) = 0.5\
+beta1 = Cor(Y,X)*Sd(Y) / Sd(X)  \
+\
+\'97> beta1 = 0.5 * Sd(Y) / (0.5*(Sd(Y))) = 1\
+\
+# prob 5\
+X= Quiz 1, Y = Quiz2\
+Cor(Q1,Q2) = 0.4\
+mean(X) = 0\
+mean(Y) = 0\
+Sd(Y) = 1\
+Sd(X) = 1\
+beta1 = Cor(Y,X)*Sd(Y) / Sd(X)   = 0.4\
+beta0 = mean(Y) - beta1*mean(X) = 0\
+X1=1.5\
+Y1 = ?\
+\'97> Y = beta0 + beta1*X = beta1*X \'97> Y1 = 0.4*1.5 = 0.6\
+\
+\
+# prob 6\
+(X - mu) / Sd(X) = (X-mu) / sigma(x)\
+\pard\pardeftab720\sl420
+
+\f3 \cf2 \cb8 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 x <- c(8.58, 10.46, 9.01, 9.64, 8.86)
+\f0 \cf0 \cb1 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+\cf0 xc <- (x-mean(x)) / (sd(x))\
+xc\
+\'97> -0.9718658 \
+\
+# prob 67\
+intercept=?\
+x = predictor\
+y = outcome\
+\pard\pardeftab720\sl420
+
+\f3 \cf2 \cb8 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 x <- c(0.8, 0.47, 0.51, 0.73, 0.36, 0.58, 0.57, 0.85, 0.44, 0.42)\
+y <- c(1.39, 0.72, 1.55, 0.48, 1.19, -1.59, 1.23, -0.65, 1.49, 0.05)
+\fs26 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\f0\fs24 \cf0 \cb1 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 \
+coef(lm(y~x)) \'97> 1.567461\
+\
+# prob 8\
+It must be identically to zero\
+\
+# prob 9\
+\pard\pardeftab720\sl420
+
+\f3 \cf2 \cb8 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 x <- c(0.8, 0.47, 0.51, 0.73, 0.36, 0.58, 0.57, 0.85, 0.44, 0.42)
+\fs26 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\f0\fs24 \cf0 \cb1 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 mean(x)\
+0.573\
+\
+# prob 10\
+X = predictor\
+Y = outcome\
+slope=beta1\
+\
+X = outcome\
+Y = predictor\
+slope = gamma1\
+\
+beta1 / gamma1 = ? = what would the ratio be?\
+\
+(Cor(Y,X) * (Sd(Y) / Sd(X))) / (Cor(Y,X) * (Sd(X) / Sd(Y)))  = Var(Y) / Var(X)\
+\
+}

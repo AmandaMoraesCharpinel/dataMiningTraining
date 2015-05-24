@@ -1,0 +1,93 @@
+---
+title: "Quiz 3"
+author: "Jens Schreiber"
+date: "19. Mai 2015"
+output: html_document
+---
+
+1. Consider the mtcars data set. Fit a model with mpg as the outcome that includes number of cylinders as a factor variable and weight as confounder. Give the adjusted estimate for the expected change in mpg comparing 8 cylinders to 4.
+```{r}
+  library(datasets)
+  fit <- lm(mpg ~ wt + factor(cyl) -1,data=mtcars)
+  summary(fit)
+  summary(fit)$coef[4,1]-summary(fit)$coef[2,1]
+```
+
+2. Consider the mtcars data set. Fit a model with mpg as the outcome that includes number of cylinders as a factor variable and weight as a possible confounding variable. Compare the effect of 8 versus 4 cylinders on mpg for the adjusted and unadjusted by weight models. Here, adjusted means including the weight variable as a term in the regression model and unadjusted means the model without weight included. What can be said about the effect comparing 8 and 4 cylinders after looking at models with and without weight included?.
+
+```{r}
+  fitAdjusted <- lm(mpg ~ wt + factor(cyl) -1,data=mtcars)
+  summary(fitAdjusted)
+  summary(fitAdjusted)$coef[4,1]-summary(fitAdjusted)$coef[2,1] 
+  fitUnadjusted <- lm(mpg ~ factor(cyl) -1,data=mtcars)
+  summary(fitUnadjusted)
+  summary(fitUnadjusted)$coef[3,1]-summary(fitUnadjusted)$coef[1,1]
+```
+
+--> Holding weight constant, cylinder appears to have less of an impact on mpg than if weight is disregarded.
+
+3. Consider the mtcars data set. Fit a model with mpg as the outcome that considers number of cylinders as a factor variable and weight as confounder. Now fit a second model with mpg as the outcome model that considers the interaction between number of cylinders (as a factor variable) and weight. Give the P-value for the likelihood ratio test comparing the two models and suggest a model using 0.05 as a type I error rate significance benchmark.
+
+```{r}
+  require(lmtest)
+  fit1 <- lm(mpg ~ wt + factor(cyl),data=mtcars)
+  fit2 <- lm(mpg ~ wt*factor(cyl),data=mtcars)
+  summary(fit1)
+  summary(fit2)
+  lrtest(fit1,fit2)
+```
+
+--> The P-value is larger than 0.05. So, according to our criterion, we would fail to reject, which suggests that the interaction terms may not be necessary.
+
+4. Consider the mtcars data set. Fit a model with mpg as the outcome that includes number of cylinders as a factor variable and weight inlcuded in the model as
+
+```{r, echo=FALSE}
+lm(mpg ~ I(wt * 0.5) + factor(cyl), data = mtcars)
+```
+
+How is the wt coefficient interpretted?
+
+--> The estimated expected change in MPG per one ton increase in weight for a specific number of cylinders (4, 6, 8).
+
+5. Consider the following data set
+
+```{r, echo=FALSE}
+  x <- c(0.586, 0.166, -0.042, -0.614, 11.72)
+  y <- c(0.549, -0.026, -0.127, -0.751, 1.344)
+```
+
+Give the hat diagonal for the most influential point:
+
+```{r, echo=FALSE}
+  plot(x,y)
+  fit <- lm(y~x)
+  #hatvalues(fit)
+  influence.measures(fit)
+```
+
+--> 0.9946
+
+6. Consider the following data set
+
+```{r, echo=FALSE}
+  x <- c(0.586, 0.166, -0.042, -0.614, 11.72)
+  y <- c(0.549, -0.026, -0.127, -0.751, 1.344)
+```
+
+Give the slope dfbeta for the point with the highest hat value.
+
+```{r, echo=FALSE}
+  fit <- lm(y~x)
+  #dfbetas(fit)
+  influence.measures(fit)
+```
+
+--> -134
+
+7. Consider a regression relationship between Y and X with and without adjustment for a third variable Z. Which of the following is true about comparing the regression coefficient between Y and X with and without adjustment for Z.
+
+--> It is possible for the coefficient to reverse sign after adjustment. For example, it can be strongly significant and positive before adjustment and strongly significant and negative after adjustment.
+
+```{r, echo=FALSE}
+
+```
