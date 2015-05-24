@@ -51,75 +51,56 @@ The following code splits the ToothGrowth data set into the different supplement
 ```{r}
   vcToothData<-ToothGrowth[ToothGrowth$supp=="VC",]
   ojToothData<-ToothGrowth[ToothGrowth$supp=="OJ",]
-  vcTooth.dose0.5<-vcToothData[vcToothData$dose==0.5,]$len
-  vcTooth.dose1<-vcToothData[vcToothData$dose==1.0,]$len
-  vcTooth.dose2<-vcToothData[vcToothData$dose==2.0,]$len
-  ojTooth.dose0.5<-ojToothData[ojToothData$dose==0.5,]$len
-  ojTooth.dose1<-ojToothData[ojToothData$dose==1.0,]$len
-  ojTooth.dose2<-ojToothData[ojToothData$dose==2.0,]$len
-  vcSum<-c(mean(vcTooth.dose0.5), sd(vcTooth.dose0.5), 
-           mean(vcTooth.dose1), sd(vcTooth.dose1), 
-           mean(vcTooth.dose2), sd(vcTooth.dose1))
-  ojSum<-c(mean(ojTooth.dose0.5), sd(ojTooth.dose0.5), 
-           mean(ojTooth.dose1), sd(ojTooth.dose1), 
-           mean(ojTooth.dose2), sd(ojTooth.dose1))
-  sumComp <- data.frame(rbind(vcSum, ojSum))
-  names(sumComp) <- c("muDose0.5","sdDose0.5","muDose1","sdDose1","muDose2","sdDose2")
-  sumComp
+  library(plyr)
+  toothSum<-aggregate(ToothGrowth$len, by=list(ToothGrowth$supp,ToothGrowth$dose), FUN=mean)
+  toothSum$sd<-aggregate(ToothGrowth$len, by=list(ToothGrowth$supp,ToothGrowth$dose), FUN=sd)$x
+  names(toothSum) <- c("supp","dose","meanLength","sdLength")
+  toothSum
+
 ```
 
-In the summary of the data we can see that in effect the mean value of orange juice is bigger than ascorbic acid, however also the standard deviation in the different subsets is higher for orange juice.
+In the summary of the data we can see that in effect the mean value of orange juice is bigger than ascorbic acid, however the standard deviation in the different subsets is higher for orange juice.
 
 
 ###Comparison of tooth growth by supp and dose
 
-Based upon the preliminary analysis we want to examine if the difference in mean between OJ and VC is significant using the t. test assuming there variance is not equal. Where $H_0$ states that the difference in mean is equal to zero. $H_1$ states that the difference is mean is not equal to zero.
+Based upon the preliminary analysis we want to examine if the difference in mean between OJ and VC in the same dose level is significant using the t. Also we might be interest interst if a higher dose level has a significatn influence within one supplement. In order to test we assume that a subsets are of unequal variance. $H_0$ states that the difference in mean is equal to zero. $H_1$ states that the difference is mean is not equal to zero.
 
 
-```{r}
-  #t.test(vcTooth.dose0.5, ojTooth.dose0.5,var.equal=FALSE)
-  p1<-t.test(vcTooth.dose0.5, ojTooth.dose0.5,var.equal=FALSE)$p.value
-  p2<-t.test(vcTooth.dose1, ojTooth.dose1,var.equal=FALSE)$p.value
-  p3<-t.test(vcTooth.dose2, ojTooth.dose2,var.equal=FALSE)$p.value
-  c(p1,p2,p3)
-```
-In the first to cases (p1,p2) we see that for a dose level of 0.5 and 1.0 the $H_0$ is rejected in favour of $H_1$, so in this case there is a significant difference in the mean considering a confidence level of $0.95$. Where for a dose level of 2.0 $H_0$ is accepted. 
-  
-
-
-```{r,cache=TRUE}  
-  vcToothLen <- vcToothData$len
-  ojToothLen  <- ojToothData$len
-  t.test( ojToothLen,vcToothLen , paired=TRUE,alternative="less",var.equal=FALSE)
-```
+<!--In the first to cases (p1,p2) we see that for a dose level of 0.5 and 1.0 the $H_0$ is rejected in favour of $H_1$, so in this case there is a significant difference in the mean considering a confidence level of $0.95$. Where for a dose level of 2.0 $H_0$ is accepted. 
 With  the previous command we checked whether the mean of the values contained in the vector ojToothLen is less  of the mean of the values contained in the vector vcToothLen. In response, we obtained a p-value well above 0.05, which leads us to conclude that we can reject the null hypothesis H0 in favor of the alternative hypothesis H1: vcToothLen is substantial bigger thant ojToothLen.
-
-
+--!>
+In order to create all the t-tests we split the data in the different dose levels and the different supplement type. 
 ```{r,cache=TRUE}
-  t.test(len~supp, data=ToothGrowth, paired=FALSE)
-```
-
-
-
-```{r,cache=TRUE}
-  dose1<-subset(ToothGrowth, dose==0.5 )
-  dose2<-subset(ToothGrowth, dose==1.0 )
+  dose1<-subset(ToothGrowth, dose==0.5 );dose2<-subset(ToothGrowth, dose==1.0 );
   dose3<-subset(ToothGrowth, dose==2.0 )
+  dose1OJ<-subset(dose1, supp=="OJ" ); dose2OJ<-subset(dose2, supp=="OJ" ); 
+  dose3OJ<-subset(dose3, supp=="OJ" );
+  dose1VC<-subset(dose1, supp=="VC" ); dose2VC<-subset(dose2, supp=="VC" ); 
+  dose3VC<-subset(dose3, supp=="VC" );
 ```
 
+After that we can create the t-test for all the different subsets using a confidence intervall of 0.95 ($\alpha=0.5$) and summarise them in a single table.
 
 ```{r,cache=TRUE}
-  t.test(len~supp, data=dose1, paired=FALSE)
-  t.test(len~supp, data=dose2, paired=FALSE)
-  t.test(len~supp, data=dose3, paired=FALSE)
+  options(scipen=4)#disable scientific printout
+  c1<-(t.test(dose1OJ$len, dose1VC$len, var.equal=FALSE)); c2<-(t.test(dose2OJ$len, dose2VC$len,var.equal=FALSE))
+  c3<-(t.test(dose3OJ$len, dose3VC$len,var.equal=FALSE))
+  c4<-(t.test(dose1OJ$len,dose2OJ$len,var.equal=FALSE));c5<-(t.test(dose2OJ$len,dose3OJ$len, var.equal=FALSE))
+  c6<-(t.test(dose1OJ$len,dose3OJ$len,var.equal=FALSE))
+  c7<-(t.test(dose1VC$len,dose2VC$len,var.equal=FALSE));c8<-(t.test(dose2VC$len,dose3VC$len, var.equal=FALSE))
+  c9<-(t.test(dose1VC$len,dose3VC$len,var.equal=FALSE))
+  description<-c("d1OJ_vs_d1VC","d2OJ_vs_d2VC","d3OJ_vs_d3VC","d1OJ_vs_d2OJ",
+                 "d2OJ_vs_d3OJ","d1OJ_vs_d3OJ","d1VC_vs_d2VC","d2VC_vs_d3VC","d1VC_vs_d3VC")
+  pValues<-c(c1$p.value,c2$p.value,c3$p.value,c4$p.value,c5$p.value,c6$p.value,c7$p.value,c8$p.value,c9$p.value)
+  results <- cbind(description,pValues)
+  results
+  
 ```
 
-
+Please note that in the descirption column the abbreviation "d" stands for the dose level, where d1 is a dose level of 0.5, d2 is a dose level of 1 and d3 is a dose level of 2.0. OJ and VC stands for the different supplements type and "vs" refers to the comparision of the different means. Only in the case "d3OJ_vs_d3VC" the p-value is above "\alpha=0.05" , so that $H_0$ is accepted, which means that there is no significant difference in mean between OJ and VC for a dose level of 2. In all other cases the p-value is below "\alpha=0.05" so that $H_0$ is rejected in favour of the alternative hypothesis $H_1$.
 
 ### Conclusion
-
-```{r, echo=FALSE}
-
-```
+In conclusion one can say that there is an influence in the mean of the tooth length of guinea pigs between different supplements and different dose levels. However, with a dose level of 2 the difference in mean between OJ and VC is insignificant. 
 
 
