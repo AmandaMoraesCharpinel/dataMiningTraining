@@ -1,8 +1,10 @@
 ---
 title: "Analysis of tooth grow data"
 author: "Jens Schreiber"
-date: "16. Mai 2015"
-output: html_document
+date: "24 Mai 2015"
+output:
+  pdf_document:
+    latex_engine: xelatex
 ---
 
 The folloing executive summary shall analyze the ToothGrowth data in the R datasets package. Specifically it shall analyse the influcen of supplements and dosage on the tooth growth of guinea pigs.
@@ -13,7 +15,7 @@ Load the data:
   library(datasets)
 ```
 
-###Exploratory data analyses of the TooThGrowth dataset
+###Exploratory data analyses of the ToothGrowth dataset
 
 The description of the datasets is: "The response is the length of odontoblasts (teeth) in each of 10 guinea pigs at each of three dose levels of Vitamin C (0.5, 1, and 2 mg) with each of two delivery methods (orange juice or ascorbic acid)."
 The dataset has the following three variables:
@@ -22,7 +24,7 @@ The dataset has the following three variables:
 + supp as the factor for the Supplement type (VC or OJ).
 + dose as the Dose in milligrams.
 
-Based upon the former given description a scatter plot which shows the relation between the supplement and the dosage in relation to the length seems to be of interest.
+Based upon the former given description a scatter plot which shows the relation between the supplement and the dosage in relation to the length seems is of interest.
 
 ```{r,cache=TRUE}
   library(ggplot2)
@@ -46,31 +48,33 @@ In the box plot we can see that the mean tooth lengths for different dose levels
 
 ###Basic summary of the data.
 
-The following code splits the ToothGrowth data set into the different supplements and different dose leve and then calculate the mean and the standard deviation of each subset and summarise it in a single table.
+The following code splits the ToothGrowth data set into the different supplements and different dose levels and then calculate the mean and the standard deviation of each subset and summarise it in a single table.
 
 ```{r}
   vcToothData<-ToothGrowth[ToothGrowth$supp=="VC",]
   ojToothData<-ToothGrowth[ToothGrowth$supp=="OJ",]
   library(plyr)
-  toothSum<-aggregate(ToothGrowth$len, by=list(ToothGrowth$supp,ToothGrowth$dose), FUN=mean)
-  toothSum$sd<-aggregate(ToothGrowth$len, by=list(ToothGrowth$supp,ToothGrowth$dose), FUN=sd)$x
+  toothSum<-aggregate(ToothGrowth$len, 
+                      by=list(ToothGrowth$supp,ToothGrowth$dose), FUN=mean)
+  toothSum$sd<-aggregate(ToothGrowth$len, 
+                         by=list(ToothGrowth$supp,ToothGrowth$dose), FUN=sd)$x
   names(toothSum) <- c("supp","dose","meanLength","sdLength")
   toothSum
 
 ```
 
-In the summary of the data we can see that in effect the mean value of orange juice is bigger than ascorbic acid, however the standard deviation in the different subsets is higher for orange juice.
+In the summary of the data we can see that in effect the mean value of orange juice is bigger than ascorbic acid, however the standard deviations in the different subsets is higher for orange juice for each of the subsets.
 
 
 ###Comparison of tooth growth by supp and dose
 
-Based upon the preliminary analysis we want to examine if the difference in mean between OJ and VC in the same dose level is significant using the t. Also we might be interest interst if a higher dose level has a significatn influence within one supplement. In order to test we assume that a subsets are of unequal variance. $H_0$ states that the difference in mean is equal to zero. $H_1$ states that the difference is mean is not equal to zero.
+Based upon the preliminary analysis we want to examine if the difference in mean between OJ and VC in the same dose level is significant using the t-test. Also we are intersted if a higher dose level has a significant influence within one supplement. In order to test we assume that all subsets are of unequal variance. $H_0$ states that the difference in mean is equal to zero. $H_1$ states that the difference is mean is not equal to zero.
 
 
 <!--In the first to cases (p1,p2) we see that for a dose level of 0.5 and 1.0 the $H_0$ is rejected in favour of $H_1$, so in this case there is a significant difference in the mean considering a confidence level of $0.95$. Where for a dose level of 2.0 $H_0$ is accepted. 
 With  the previous command we checked whether the mean of the values contained in the vector ojToothLen is less  of the mean of the values contained in the vector vcToothLen. In response, we obtained a p-value well above 0.05, which leads us to conclude that we can reject the null hypothesis H0 in favor of the alternative hypothesis H1: vcToothLen is substantial bigger thant ojToothLen.
 --!>
-In order to create all the t-tests we split the data in the different dose levels and the different supplement type. 
+In order to create all the t-tests we split the data in the different dose levels and the different supplement types. 
 ```{r,cache=TRUE}
   dose1<-subset(ToothGrowth, dose==0.5 );dose2<-subset(ToothGrowth, dose==1.0 );
   dose3<-subset(ToothGrowth, dose==2.0 )
@@ -84,23 +88,28 @@ After that we can create the t-test for all the different subsets using a confid
 
 ```{r,cache=TRUE}
   options(scipen=4)#disable scientific printout
-  c1<-(t.test(dose1OJ$len, dose1VC$len, var.equal=FALSE)); c2<-(t.test(dose2OJ$len, dose2VC$len,var.equal=FALSE))
+  c1<-(t.test(dose1OJ$len, dose1VC$len, var.equal=FALSE)); 
+  c2<-(t.test(dose2OJ$len, dose2VC$len,var.equal=FALSE))
   c3<-(t.test(dose3OJ$len, dose3VC$len,var.equal=FALSE))
-  c4<-(t.test(dose1OJ$len,dose2OJ$len,var.equal=FALSE));c5<-(t.test(dose2OJ$len,dose3OJ$len, var.equal=FALSE))
+  c4<-(t.test(dose1OJ$len,dose2OJ$len,var.equal=FALSE));
+  c5<-(t.test(dose2OJ$len,dose3OJ$len, var.equal=FALSE))
   c6<-(t.test(dose1OJ$len,dose3OJ$len,var.equal=FALSE))
-  c7<-(t.test(dose1VC$len,dose2VC$len,var.equal=FALSE));c8<-(t.test(dose2VC$len,dose3VC$len, var.equal=FALSE))
+  c7<-(t.test(dose1VC$len,dose2VC$len,var.equal=FALSE));
+  c8<-(t.test(dose2VC$len,dose3VC$len, var.equal=FALSE))
   c9<-(t.test(dose1VC$len,dose3VC$len,var.equal=FALSE))
   description<-c("d1OJ_vs_d1VC","d2OJ_vs_d2VC","d3OJ_vs_d3VC","d1OJ_vs_d2OJ",
-                 "d2OJ_vs_d3OJ","d1OJ_vs_d3OJ","d1VC_vs_d2VC","d2VC_vs_d3VC","d1VC_vs_d3VC")
-  pValues<-c(c1$p.value,c2$p.value,c3$p.value,c4$p.value,c5$p.value,c6$p.value,c7$p.value,c8$p.value,c9$p.value)
+                 "d2OJ_vs_d3OJ","d1OJ_vs_d3OJ",
+                "d1VC_vs_d2VC","d2VC_vs_d3VC","d1VC_vs_d3VC")
+  pValues<-c(c1$p.value,c2$p.value,c3$p.value,c4$p.value,
+             c5$p.value,c6$p.value,c7$p.value,c8$p.value,c9$p.value)
   results <- cbind(description,pValues)
   results
   
 ```
 
-Please note that in the descirption column the abbreviation "d" stands for the dose level, where d1 is a dose level of 0.5, d2 is a dose level of 1 and d3 is a dose level of 2.0. OJ and VC stands for the different supplements type and "vs" refers to the comparision of the different means. Only in the case "d3OJ_vs_d3VC" the p-value is above "\alpha=0.05" , so that $H_0$ is accepted, which means that there is no significant difference in mean between OJ and VC for a dose level of 2. In all other cases the p-value is below "\alpha=0.05" so that $H_0$ is rejected in favour of the alternative hypothesis $H_1$.
+Please note that in the descirption column the abbreviation "d" stands for the dose level, where d1 is a dose level of 0.5, d2 is a dose level of 1 and d3 is a dose level of 2.0. OJ and VC stands for the different supplements type and "vs" refers to the comparision of the different means. Only in the case "d3OJ_vs_d3VC" the p-value is above $\alpha=0.05$ , so that $H_0$ is accepted, which means that there is no significant difference in mean between OJ and VC for a dose level of 2. In all other cases the p-value is below $\alpha=0.05$ so that $H_0$ is rejected in favour of the alternative hypothesis $H_1$.
 
 ### Conclusion
-In conclusion one can say that there is an influence in the mean of the tooth length of guinea pigs between different supplements and different dose levels. However, with a dose level of 2 the difference in mean between OJ and VC is insignificant. 
+In conclusion one can say that there is an influence in the mean of the tooth length of guinea pigs between different supplement types and different dose levels. However, with a dose level of 2 the difference in mean between OJ and VC is insignificant. 
 
 

@@ -1,9 +1,0 @@
-*_cache 
-*_files
-*.log
-*.tex
-*.pdf
-*.html
-*.RData
-project_cache   
-project_files

@@ -1,0 +1,58 @@
+---
+title: "Project"
+author: "Jens Schreiber"
+date: "19. August 2015"
+output: html_document
+---
+
+
+
+```{r, echo=FALSE,cache=TRUE}
+  library(caret)
+  set.seed(123456)
+  #df <- read.csv(file="pml-training.csv")
+  
+  #inTrain = createDataPartition(df$classe, p = 1/10)[[1]]
+  #training = df[inTrain, ]
+  #testing = df[-inTrain, ]
+  #write.csv(file="training.csv",training)
+  #write.csv(file="testing.csv",testing)
+```
+
+```{r, echo=TRUE, cache=TRUE}
+  #library(doMC)
+  #registerDoMC(2)
+  data.train <- read.csv(file="training.csv")
+##################
+  data.numeric <- sapply( data.train, as.numeric )
+  data.numeric$user_name <- data.train$user_name 
+  data.numeric$cvtd_timestamp <- data.train$cvtd_timestamp
+  data.numeric$classe <- data.train$classe
+  data.train <- data.frame(data.numeric)
+
+#################
+ # data.preProc <- preProcess(data.train,method="pca",pcaComp=2)
+ # trainc.pc <- predict(data.preProc,data.train)
+  
+  #ctrl <- trainControl(method = "boot",repeats=3)
+  #model.pls<-train(classe ~ ., data=data.train, method="pls", 
+   #                tuneLength=5)
+#  model.glm <- train(classe ~ ., data=data.preProc, method="glm")
+ # model.glm
+  #,trControl=ctrl)
+  #data.test <- read.csv(file="testing.csv",500)
+##################
+ # data.numeric <- sapply( data.test, as.numeric )
+#  data.numeric$user_name <- data.test$user_name 
+ # data.numeric$cvtd_timestamp <- data.test$cvtd_timestamp
+#  data.numeric$classe <- data.test$classe
+ # data.test <- data.numeric
+#################
+
+#  plsClasses <- predict(model.pls, newdata = data.test)
+#  confusionMatrix(data = plsClasses, data.test$classe)
+```
+   
+
+
+

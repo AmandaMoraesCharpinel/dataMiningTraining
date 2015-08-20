@@ -1,11 +1,11 @@
 ---
 title: "Sample means from an exponential distribution and its behaviour towards CLT"
 author: "Jens Schreiber"
-date: "16. Mai 2015"
+date: "24 Mai 2015"
 output:
-  html_document: default
   pdf_document:
     keep_tex: yes
+  html_document: default
   word_document: default
 ---
 In this report the exponetial function is investigated and compared to its behaviour towards the Central Limit Theorem (CLT). The CLT states that when we take averages of Independent and Identical Distributed variables, the averages become that of a normal distribution as sample size increases. If we consider $\bar{X}_n$ as the  continuously created sample means of the exponential function then it is approximately $N(\mu,\sigma^2 / n)$ under the CLT, where $\sigma^2 / n$ is the standard error. 
@@ -23,10 +23,10 @@ The following R code set-up's the required parameters:
   nrSim <- 1000
 ```
 
-Please note that for the exponential function the mean is $1/\lambda$ and the standard deviations is $1/\lambda$. 
+Please note that for the exponential function the mean is $1/\lambda$ and the standard deviation is $1/\lambda$. 
 
 ### Simulation
-In order to show the CLT with the exponential function we create $n=40$ samples with $\lambda=0.2$, attach its mean to the sampleMean vector and do this $1000$ times. In the following code. For convenience we store the data the sampleData frame in the last step.
+In order to show the CLT with the exponential function we create $n=40$ samples with $\lambda=0.2$, attach its mean to the sampleMean vector and do this $1000$ times, see the the following code. For convenience we store the data in the sampleData frame in the last step.
 
 ```{r}
   set.seed(42)
@@ -44,12 +44,13 @@ The folloing R code creates an histogram of the simulated data and plot their th
   # Histogram with count on y-axis
   geom_histogram(aes(y = ..density..),  binwidth=.5, colour="black", fill="white") +  
   # line of sample mean
-  geom_vline(aes(xintercept=mean(sampleMeans, na.rm=T)),  color="red", linetype="dashed", size=1) +
+  geom_vline(aes(xintercept=mean(sampleMeans, na.rm=T)),  color="red", 
+             linetype="dashed", size=1) +
   # line of theoretical mean
   geom_vline(aes(xintercept=meanTheor),  color="blue", linetype="dashed", size=1)  
 ```
 
-However their theoretical and sample mean are so close to eachother it is hard to distinguish them. The theoretical mean is $5.0$ and depending on the simulation the sample mean is somewhat around $5.0$. In most cases the sample mean is around $5.02$ which is realy close to the theoretical mean.
+Their theoretical and sample mean are so close to each other it is hard to distinguish them. The theoretical mean is $5.0$ and depending on the simulation the sample mean is $4.99$, with "set.seed(42)", which is close to the theoretical mean of $5.0$
 
 ```{r, cache=TRUE}
   c(meanTheor,mean(sampleData$sampleMeans))
@@ -68,7 +69,7 @@ Which is really close to our actual value of our sample means:
   var(sampleData$sampleMeans)
 ```
 
-Again, the acutual result depends upon the simulation and will be different each time we run the simulatiion, but most of the time the deviation between the two values is between $0.01$ and $0.02$.
+The acutual result depends upon the simulation and will be different for different "set.seed()".
 
 
 ### Test whether the distribution is approximately normal
@@ -82,9 +83,9 @@ In this section we want to show that the created distribution of sample means fr
   hist( sampleData$sampleMeans, xlab="Sample means of exponential function", main="")
 ```
 
-In the comparison of the two plots, we see that the samples of the exponential function follow obviously a exponential shaped distribution, where the simulated creates a bell shaped histogramm simular to that of a normal distribution.
+In the comparison of the two plots, we see that the samples of the exponential function follow obviously an exponential shaped distribution, where the simulated data creates a bell shaped histogramm simular to that of a normal distribution.
 
-Furthermore we can use the following Q-Q-Plot to show its approximated normal distribution:
+Furthermore we can use the following Q-Q-Plot to show its approximal normal distribution:
 
 ```{r, cache=TRUE}
   qqnorm(sampleMeans)

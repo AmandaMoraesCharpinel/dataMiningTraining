@@ -1,76 +1,101 @@
 ---
 title: "Influences on MPG in the mtcars dataset"
 author: "Jens Schreiber"
-date: "17. Mai 2015"
-output: html_document
+date: "24 Mai 2015"
+output:
+  pdf_document:
+    keep_tex: yes
+    latex_engine: xelatex
+  html_document: default
+fontsize: 8pt
 ---
+###Executive Summary
 
-This report shall evaluated the influences on "miles per galon (MPG)" in the mtcars dataset. Particullary we are intersted in answering if an automatic or a manual transmission is better for MPG and quantify the MPG difference between a manual and a automatic transmission. Therefore we will do an exploratory analysis and evaluate different regression models.
-
-Initial set-up:
-```{r,cache=TRUE}
-  library(datasets);library(ggplot2);library(dplyr)
-  #assures that factor variables are correctly included as factor variables
-  mtcars$am<-as.factor(mtcars$am); mtcars$cyl<-as.factor(mtcars$cyl)
-  mtcars$gear<-as.factor(mtcars$gear);mtcars$carb<-as.factor(mtcars$carb)
-  mtcars$vs<-as.factor(mtcars$vs)
-```
+* This report shall evaluated the influences on "miles per galon (MPG)" in the mtcars dataset. Particullary we are intersted in answering the following two questions: 
+    + Is an automatic or manual transmission better for MPG?
+    + What is the MPG difference between automatic and manual transmissions?
+* Therefore we will do an exploratory analysis and evaluate different regression models, where MPG is the evaluated outcome.
+* During evaluation of different variables for a linear model hp, wt, disp and cyl are the most promissing
+* In the final model for predicting the outcome mpg we use the predictors wt,hp and am and obtain an adjusted r squared value of 0.82 
+    + (only am as predicor for MPG has an adjusted r squared error of 0.34)
+* In the final model we reject that am has significant influence with a p-value of 0.14 and a significance level of 0.05
+<!--* However we claim that hp with a p-value of 0.0005464023 and wt with a p-value of  0.003574031 have significant influence on the model--!>
+* In conclusion we fail to answer the two questions due to the insignificance of am for predicting MPG in our final model
 
 ###Exploratory Analysis
-At first one might be intersted if the mean MPG for a manual or an automatic transmission is higher. In figure 1 we see that the manual transmission (factor of am=1) has a higher mean value for MPG and also a higher standard deviation. Typically one would expect that also there is a relation between the weight (wt) and mpg as well as between the horse power (hp) and mpg. 
-```{r,cache=TRUE}
-  cor(mtcars$wt,numeric(mtcars$cyl))
-  cor(mtcars$hp,numeric(mtcars$cyl))
-```
-Due to a correlation between the cylinders (cyl) and wt, as well as between cyl and hp we include cyl as a factor variable in the figures 2 and 3 in the appendix.
 
-###“Is an automatic or manual transmission better for MPG”
+Initial set-up:
+```{r,cache=TRUE,message=FALSE, warning=FALSE,comment=FALSE}
+  library(datasets);library(ggplot2);library(dplyr)
+  #assures that factor variables are correctly included as factor variables
+  mtcars1<-mtcars;mtcars1$am<-as.factor(mtcars$am); mtcars1$cyl<-as.factor(mtcars1$cyl)
+```
+
+At first one might be intersted if the mean MPG for a manual or an automatic transmission is higher. In figure 1 we see that the manual transmission has a higher mean value for MPG and a higher standard deviation. In the correlation plot of figure 2, we see that mpg has the highest correlation to wt, disp, cyl and hp. Also we see a high correlation between cyl to disp, wt and hp. Furtheremore there is a high correlation between hp to cyl and disp.
+
+###Selection of linear regression models
 
 In order to answer the question if an automatic or manual transmission is better for MPG one must also include other variables which might influence MPG besides the transmission method. 
 
+<!--
 ```{r,cache=TRUE}
-  library(car)
-  summary(aov(lm(mpg~.,data=mtcars)))
+  #mtcars1$gear<-as.factor(mtcars1$gear);mtcars1$carb<-as.factor(mtcars1$carb)
+  #mtcars1$vs<-as.factor(mtcars1$vs)
+  summary(aov(lm(mpg~.,data=mtcars1)))
 ```
+--!>
 
-The aov function suggests to include the variables cyl, wt and disp. Based on the exploratory analysis and our particular question regarding the influence of tha am variable we also will include am and hp for our evaluation. 
-```{r,cache=TRUE}
-  fit1 <- lm(mpg~am,data=mtcars)
-  fit2 <- lm(mpg~am+cyl,data=mtcars)
-  fit3 <- lm(mpg~am+cyl+disp,data=mtcars)
-  fit4 <- lm(mpg~am+cyl+disp+wt,data=mtcars)
-  fit5 <- lm(mpg~am+cyl+disp+wt+hp,data=mtcars)
-  anova(fit1,fit2,fit3,fit4,fit5)
+Based upon the correlation to mpg and the required analysis of am we analyse the following models:
+```{r,cache=TRUE,echo=TRUE}
+  fit1 <- lm(mpg~am,data=mtcars1);fit2 <- lm(mpg~am+cyl,data=mtcars1)
+  fit3 <- lm(mpg~am+cyl+disp,data=mtcars1);fit4 <- lm(mpg~am+cyl+disp+hp,data=mtcars1)
+  fit5 <- lm(mpg~am+cyl+disp+hp+wt,data=mtcars1);fit6 <- lm(mpg~am+hp+wt,data=mtcars1)
+  anova(fit1,fit2,fit3,fit4,fit5,fit6)
 ```
-
+For the models fit2,fit3,fit4 and fit4 the p-value is below 0.05 so we reject $H_0$ in favour of $H_1$ so that there is significant difference to our base model of fit1. However for fit6 we fail to reject $H_0$, so that there is no significant difference between fit5 and fit6. This can be confirmed by the adjusted r squared error. The difference in the adjusted r squared error between fit5 and fit6 is around 0.012, so there is no major improve. This is due to the correlation between hp to disp and cyl, which was shown in the exploratory analysis section. 
 ```{r,cache=TRUE}
-  c(summary(fit1)$adj.r.squared,summary(fit2)$adj.r.squared,
-               summary(fit3)$adj.r.squared,summary(fit4)$adj.r.squared, 
-               summary(fit5)$adj.r.squared)
+  c(summary(fit1)$adj.r.squared,summary(fit2)$adj.r.squared,summary(fit3)$adj.r.squared,
+    summary(fit4)$adj.r.squared, summary(fit5)$adj.r.squared,summary(fit6)$adj.r.squared)
 ``` 
 
-```{r,cache=TRUE}
-    summary(fit1)
-    summary(fit5)
-``` 
+The model of fit6 agrees with our natural understanding that horse power and the weight of a car mainly influence MPG. In the Q-Q-Plot of figure 3 we see that the residuals seem to be normally distributed. In the "Residuals vs Fitted"-Plot there is no clear pattern, even though we see more negative values which menas our prediction was too high. The two former arguments strengths the believe in our previous results. 
+ 
 
-###"Quantify the MPG difference between automatic and manual transmissions"
+###Quantification of the MPG difference between automatic and manual transmissions
+In the summary of the most reasonable fit (fit6), the p-value for am is aroud 0.141, in case of a significance level of 0.05 we would reject $H_1$ in favour of $H_0$. So, there is no significance influence of the transmission type. Based on the small p-values for hp and wt, those seem to be the biggest influence for MPG with an mpg offset of 34  a negative slope of -0.038 for hp and a slope of -2.88 for wt. Due to the insignificance of am we cannot quantify the difference between automatic and manual transmissions for the model of fit6.
+```{r,cache=TRUE,echo=TRUE}
+    summary(fit6)$coefficients
+```
 
 
-###Appendix
+
+##Appendix
+
 ####Figure 1:
-```{r,cache=TRUE,message=FALSE, warning=FALSE,fig.height=5, fig.width = 5}
-  ggplot(data=mtcars, aes(x=factor(am), y=mpg,fill=factor(am))) + geom_boxplot()
+
+```{r,cache=TRUE,message=FALSE, warning=FALSE,fig.height=5, fig.width = 7}
+  ggplot(data=mtcars1, aes(x=am, y=mpg,fill=am),xlab="Transmission Type",ylab="MPG") + 
+  geom_boxplot() + scale_fill_discrete(name="Transmission Type (am)",
+                                       labels=c("Automatic", "Manual"))
 ```
+
+\newpage
 
 ####Figure 2:
+
+
 ```{r,cache=TRUE,fig.height=5, fig.width = 5}
-  qplot(y=mpg, x=wt, data=mtcars, shape=factor(cyl), color=factor(cyl),main="", xlab="Weight", ylab="MPG")  
+  library(corrplot)
+  corrplot.mixed(cor(mtcars), order = "AOE")
 ```
+\newpage
 
 ####Figure 3:
+
+
 ```{r,cache=TRUE,fig.height=5, fig.width = 5}
-  qplot(y=mpg, x=hp, data=mtcars, shape=factor(cyl), color=factor(cyl),main="",xlab="HP", ylab="MPG")  
+  par(mfrow=c(2,2))
+  plot(fit6)
 ```
 
 <!--

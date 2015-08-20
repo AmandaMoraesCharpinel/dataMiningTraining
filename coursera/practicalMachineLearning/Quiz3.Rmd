@@ -1,0 +1,46 @@
+---
+title: "Quiz3"
+author: "Jens Schreiber"
+date: "19. August 2015"
+output: html_document
+---
+
+Question 1
+Load the cell segmentation data from the AppliedPredictiveModeling package using the commands:
+
+```{r, echo=FALSE}
+  library(AppliedPredictiveModeling)
+  data(segmentationOriginal)
+  library(caret)
+  library(rpart)
+```
+1. Subset the data to a training set and testing set based on the Case variable in the data set. 
+2. Set the seed to 125 and fit a CART model with the rpart method using all predictor variables and default caret settings. 
+
+
+```{r, echo=FALSE}
+  sessionInfo()
+  #head(segmentationOriginal,2)
+  names(segmentationOriginal)
+  training = segmentationOriginal[segmentationOriginal$Case=="Train", ]
+  testing = segmentationOriginal[segmentationOriginal$Case=="Test", ]
+  set.seed(125)
+  rpartFit<-rpart(Class ~ .,data=training)
+  printcp(rpartFit) # display the results 
+  plotcp(rpartFit) # visualize cross-validation results 
+  #summary(rpartFit) # detailed summary of splits
+
+  # plot tree 
+  plot(rpartFit, uniform=TRUE, 
+    main="Classification Tree for Case")
+  text(rpartFit, use.n=TRUE, all=TRUE, cex=.8)
+  newdata.example <- make.obs(c(TotalIntenStatusCh3 = 3, FiberWidthCh1 = 20, VarIntenCh4 = 100))
+  predict(rpartFit, newdata=newdata.example)
+```
+
+3. In the final model what would be the final model prediction for cases with the following variable values:
+a. TotalIntench2 = 23,000; FiberWidthCh1 = 10; PerimStatusCh1=2 
+b. TotalIntench2 = 50,000; FiberWidthCh1 = 10;VarIntenCh4 = 100 
+c. TotalIntench2 = 57,000; FiberWidthCh1 = 8;VarIntenCh4 = 100 
+d. FiberWidthCh1 = 8;VarIntenCh4 = 100; PerimStatusCh1=2 
+
