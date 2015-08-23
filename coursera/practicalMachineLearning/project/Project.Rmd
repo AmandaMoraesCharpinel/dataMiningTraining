@@ -48,7 +48,7 @@ pandoc_args: [
   library(corrplot)
   registerDoMC(cores = 4)
 
-  data.train <- read.csv(file="training.csv",na.strings=c("NA",""))
+  data.train <- read.csv(file="training.csv",na.strings=c("NA",""),4000)
   data.train <- preProcessAttributeClass(data.train)
   # use only rows which not having any NA values
   data.train <- data.train[ , ! apply( data.train , 2 , function(x) any(is.na(x)) ) ]
@@ -72,29 +72,20 @@ pandoc_args: [
   #data.test$classe <- as.numeric(data.test.classe)
   data.test$classe <- data.test.classe
   #data.test <- na.omit(data.test)
-  
- 
-
-
-  
-
-  
-
-
 ```
 
 ```{r, echo=FALSE, cache=TRUE}   
-  model.glm <- train(classe ~ . ,data=data.train, method="rpart")
-  testPredict.glm <- predict(model.glm,newdata=data.test,na.action=na.pass)
+  fitControl <- trainControl( method = "repeatedcv",number = 10,repeats = 2)
+
+  ########### rpart
+  model.rpart <- train(classe ~ . ,data=data.train, method="rpart")
+  testPredict.rpart <- predict(model.rpart,newdata=data.test,na.action=na.pass)
   sum(summary(testPredict.glm))
   sum(summary(data.test$classe))
   confusionMatrix(testPredict.glm,data.test$classe)
+  #save(model.rpart,"modelRpart.Rmd")
 
-  fitControl <- trainControl(## 10-fold CV
-                           method = "repeatedcv",
-                           number = 10,
-                           ## repeated ten times
-                           repeats = 10)
+  ########### gbm
   model.gbm <- train(classe ~ ., data.train = training,
                  method = "gbm", trControl = fitControl,
                  ## This last option is actually one
@@ -104,6 +95,7 @@ pandoc_args: [
   sum(summary(testPredict.gbm))
   sum(summary(data.test$classe))
   confusionMatrix(testPredict.gbm,data.test$classe)
+  #save(model.rpart,"modelGbm.Rmd")
                            
 ```
 
