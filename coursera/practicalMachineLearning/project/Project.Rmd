@@ -1,5 +1,5 @@
 ---
-title: "Project"
+title: "Prediction Of Activity Quality From Activity Monitors"
 author: "Jens Schreiber"
 date: "19. August 2015"
 output: html_document
@@ -9,6 +9,23 @@ pandoc_args: [
     ]
 ---
 
+###Executive Summary
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, the goal is to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset). 
+In order to predict one out five (A,B,C,D,E) "lift methods", where A is the correct execution of the exercise, the following steps are done:
+
+
+* Preprocessing:
+    + splitting the "pml-training.csv"" data set with "createDataPartition" into data.train and data.test
+    + remove rows which contain invalid data
+    + using "cor" and "findCorrelation" to select features
+  
+* Training of machine learning algorithms using Cross-Validation of:
+    + Generalized Boosted Regression Models
+    + Classification And Regression Tree (CART) with rpart
+    + Random Forest
+    + evaluation of the three approaches, where random forest with a precision of 0.9935 has the best result
+* select random forest (rf) with an out of sample error rate below 1%
+* apply the random forest model to the test set for submission
 
 
 ```{r, echo=FALSE,cache=TRUE}
@@ -37,91 +54,145 @@ pandoc_args: [
 
 ```
 
-subsamples <- createDataPartition(y=trainingset$classe, p=0.75, list=FALSE)
-subTraining <- trainingset[subsamples, ] 
-subTesting <- trainingset[-subsamples, ]
 
-```{r, echo=FALSE, cache=TRUE}
+
+
+### Preprocessing
+
+#### Get the data
+```{r, echo=TRUE, cache=TRUE}
   registerDoMC(cores = 2)
   set.seed(123456)
 
-  rawData <- read.csv(file="pml-training.csv",na.strings=c("NA","#DIV/0!",""),500)
-  subSamples <- createDataPartition(y=rawData$classe, p=3/4, list=FALSE)
-  data.train <- trainingset[subSamples, ] 
-  data.test <- trainingset[-subSamples, ]
+  # if data is not on your local storage donwload it first
+  #dataTrainUrl <- "http://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+  #dataTrainSet <- read.csv(url(dataTrainUrl), na.strings=c("NA","#DIV/0!",""))
 
+  #dataSubmissionUrl <- "http://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+  #dataSubmissionSet <- read.csv(url(dataSubmissionUrl), na.strings=c("NA","#DIV/0!",""))
+
+
+  rawData <- read.csv(file="pml-training.csv",na.strings=c("NA","#DIV/0!",""))
+  subSamples <- createDataPartition(y=rawData$classe, p=3/4, list=FALSE)
+  data.train <- rawData[subSamples, ] 
+  data.test <- rawData[-subSamples, ]
+```
+
+```{r, echo=FALSE, cache=TRUE}
   data.train <- preProcessAttributeClass(data.train)
   # use only rows which not having any NA values
   data.train <- data.train[ , ! apply( data.train , 2 , function(x) any(is.na(x)) ) ]
- 
-  data.test <- preProcessAttributeClass(data.test)
-  # use only rows in which the training data didn't have a NA values
-  data.test <- data.test[,colnames(data.train)]
 
-  #data.cor <- scale(subset( data.train, select = -classe ),center=TRUE,scale=TRUE)
+  data.test <- preProcessAttributeClass(data.test)
   data.cor <- subset( data.train, select = -classe )
-  descrCor <- cor(data.cor,use="all.obs")
-  corrplot(descrCor,order="hclust", addCoef.col=NULL,tl.cex=0.1,tl.col="white")
-  highlyCorDescr <- findCorrelation(descrCor, cutoff = .5,    
-                                    names=TRUE)#verbose=TRUE)
-  data.train.classe <- data.train$classe
-  data.train <- data.train[,highlyCorDescr]
-  #data.train$classe <- as.numeric(data.train.classe)
-  data.train$classe <- data.train.classe
-  data.test.classe <- data.test$classe
-  data.test <- data.test[,highlyCorDescr]
-  #data.test$classe <- as.numeric(data.test.classe)
-  data.test$classe <- data.test.classe
-  #data.test <- na.omit(data.test)
 ```
 
-```{r, echo=FALSE, cache=TRUE}   
-  fitControl <- trainControl( method = "repeatedcv",number = 5,repeats = 1)
+For ease of readness a lot of the actual code is skipped in the report. 
+For detailled information please refer to the code itself. During the preprocessing the following steps were done:
 
-  ########### rpart
-  model.rpart <- train(classe ~ . ,data=data.train, method="rpart")
-  ggplot(model.rpart)
+* the first seven colums are removed, because they are not relevant for the prognosis
+* rows with any NA values were removed, because a lot of algorithms in the caret package have problems with that
+* a correlation matrix was calculated
+* a correlation plot is used to determine a cutoff value of 0.5 for the "findCorrelation" function, it seems to be a good balance between correlated and non-correlated features
+* all data input is changed according to the former preprocessing
+
+```{r, echo=TRUE, cache=TRUE}
+  descrCor <- cor(data.cor,use="all.obs")
+  corrplot(descrCor,order="hclust", addCoef.col=NULL,tl.cex=0.1,tl.col="white")
+  # trim so that only values with a correlation above 0.5 is used
+  highlyCorDescr <- findCorrelation(descrCor, cutoff = .5, names=TRUE)
+```
+
+```{r, echo=FALSE, cache=TRUE} 
+  # adapt train and validation data to adapt to new correlation values
+  data.train.classe <- data.train$classe
+  data.train <- data.train[,highlyCorDescr]
+  data.train$classe <- data.train.classe
+
+  data.test.classe <- data.test$classe
+  data.test <- data.test[,highlyCorDescr]
+  data.test$classe <- data.test.classe
+```
+###Model Building
+
+The following sections show the train and test results of the three different algorithms rpart, gbm and rf under evaluation using the caret package. In the end a final model is selected.
+
+####Classification And Regression Tree (rpart)
+```{r, echo=TRUE, cache=TRUE}   
+  if(file.exists("modelRpart.rds")) {
+    model.rpart <- readRDS("modelRpart.rds")  
+  } else {
+    model.rpart <- train(classe ~ . ,data=data.train, method="rpart", 
+                         trControl=trainControl(method = "cv", number = 4))
+    saveRDS(model.rpart,"modelRpart.rds")
+  }
+
+ # ggplot(model.rpart)
   testPredict.rpart <- predict(model.rpart,newdata=data.test,na.action=na.pass)
-  sum(summary(testPredict.rpart))
-  sum(summary(data.test$classe))
   confusionMatrix(testPredict.rpart,data.test$classe)
-  #save(model.rpart,"modelRpart.Rmd")
 
-  ########### gbm
-  model.gbm <- train(classe ~ ., data = data.train,
-                 method = "gbm", trControl = fitControl,
-                 ## This last option is actually one
-                 ## for gbm() that passes through
+```
+
+###Generalized Boosted Regression Models (gbm)
+
+```{r, echo=TRUE, cache=TRUE} 
+  if(file.exists("modelGbm.rds")) {
+    model.gbm <- readRDS("modelGbm.rds")   
+  } else {
+    model.gbm <- train(classe ~ ., data = data.train,
+                 method = "gbm", trControl = trainControl(method = "cv", number = 10),
                  verbose = FALSE)
-  ggplot(model.gbm)
+    saveRDS(model.rpart,"modelGbm.rds")
+  }
+ 
+ # ggplot(model.gbm)
   testPredict.gbm <- predict(model.gbm,newdata=data.test,na.action=na.pass)
-  sum(summary(testPredict.gbm))
-  sum(summary(data.test$classe))
   confusionMatrix(testPredict.gbm,data.test$classe)
-  #save(model.rpart,"modelGbm.Rmd")
+  
+```
 
-  ########### rf
-  model.rf <- train(classe ~ ., data = data.train,
-                 method = "rf", trControl = fitControl)
-  ggplot(model.rf)
+###Random Forest (rf)
+```{r, echo=TRUE, cache=TRUE} 
+  if(file.exists("modelRf.rds")) {
+    model.rf <- readRDS("modelRf.rds")
+  } else {
+    model.rf <- train(classe ~ ., data = data.train,
+                 method = "rf", trControl = trainControl(method = "cv", number = 10))
+    saveRDS(model.rpart,"modelRf.rds")
+  }
+
+  #ggplot(model.rf)
   testPredict.rf <- predict(model.rf,newdata=data.test,na.action=na.pass)
-  sum(summary(testPredict.rf))
-  sum(summary(data.test$classe))
   confusionMatrix(testPredict.rf,data.test$classe)
                    
 ```
 
-```{r, echo=FALSE, cache=TRUE} 
+All in all the following accuracy is obtained for the algorithms:
+
+* rpart obtains an accuracy of 0.4203
+* gbm obtains an accuracy of 0.9449
+* rf obtains an accuracy of 0.9935
+
+Using the above used configurations gbm and rf achieve almost similar perormace results in terms of accuracy, however gbm has a few more misclassification. Taking those results into account the out of sample error rate is given by 1 - accuracy, so that
+
+* rpart is misclassifying 57.97%
+* gbm is misclassifying  5.51%
+* rf is misclassifying  0.65%
+
+Based on this results rf is selected with an out of sample error rate below 1% to be the best model for prediction of the bell exercise classes. 
+
+###Submission
+The following code shows the generation of the files which are used for the final submission using the rf model obtained from previous results.
+```{r, echo=TRUE, cache=TRUE} 
   # load submission data set from local storage
-  data.test.final <- read.csv('pml-testing.csv', na.strings=c("NA","#DIV/0!", ""))
-  data.test.final <- preProcessAttributeClass(data.test.final)
+  data.submission <- read.csv('pml-testing.csv', na.strings=c("NA","#DIV/0!", ""))
+  data.submission <- preProcessAttributeClass(data.submission)
   # use only rows in which the training data didn't have a NA values
-  data.test.final <- data.test[,colnames(data.train.final)]
-  data.test.final.classe <- data.test.final$classe
-  data.test.final <- data.test.final[,highlyCorDescr]
-  data.test.final$classe <- data.test.final.classe
-  predictfinal <- predict(model.rf, data.test.final, type="class")
-  predictfinal
+  data.submission.classe <- data.submission$classe
+  data.submission <- data.submission[,highlyCorDescr]
+  data.submission$classe <- data.submission.classe
+  predictfinal <- predict(model.rf, newdata=data.submission,na.action=na.pass)
+  #predictfinal
 
   # Writing files for submission
   pml_write_files = function(x){
