@@ -12,15 +12,13 @@ pandoc_args: [
 
 
 ```{r, echo=FALSE,cache=TRUE}
-  library(caret)
-  set.seed(123456)
-  #df <- read.csv(file="pml-training.csv")
-  # creates randomizes stratified sample of the data into training and test data
-  #inTrain = createDataPartition(df$classe, p = 3/4)[[1]]
-  #training = df[inTrain, ]
-  #testing = df[-inTrain, ]
-  #write.csv(file="training.csv",training)
-  #write.csv(file="testing.csv",testing)
+    library(corrplot)
+    require(FactoMineR) 
+    library(caret)
+    library(doMC)
+    library(corrplot)
+    library(ggplot2)
+    library(randomForest)
 
    preProcessAttributeClass <- function (data.convert) {
     classe <- data.convert$classe
@@ -36,23 +34,26 @@ pandoc_args: [
     data.convert$classe<-classe
     data.convert
   }
+
 ```
 
-
+subsamples <- createDataPartition(y=trainingset$classe, p=0.75, list=FALSE)
+subTraining <- trainingset[subsamples, ] 
+subTesting <- trainingset[-subsamples, ]
 
 ```{r, echo=FALSE, cache=TRUE}
-  library(corrplot)
-  require(FactoMineR) 
-  library(caret)
-  library(doMC)
-  library(corrplot)
-  registerDoMC(cores = 4)
+  registerDoMC(cores = 2)
+  set.seed(123456)
 
-  data.train <- read.csv(file="training.csv",na.strings=c("NA",""),4000)
+  rawData <- read.csv(file="pml-training.csv",na.strings=c("NA","#DIV/0!",""),500)
+  subSamples <- createDataPartition(y=rawData$classe, p=3/4, list=FALSE)
+  data.train <- trainingset[subSamples, ] 
+  data.test <- trainingset[-subSamples, ]
+
   data.train <- preProcessAttributeClass(data.train)
   # use only rows which not having any NA values
   data.train <- data.train[ , ! apply( data.train , 2 , function(x) any(is.na(x)) ) ]
-  data.test <- read.csv(file="testing.csv",na.strings=c("NA",""))  
+ 
   data.test <- preProcessAttributeClass(data.test)
   # use only rows in which the training data didn't have a NA values
   data.test <- data.test[,colnames(data.train)]
@@ -75,28 +76,61 @@ pandoc_args: [
 ```
 
 ```{r, echo=FALSE, cache=TRUE}   
-  fitControl <- trainControl( method = "repeatedcv",number = 10,repeats = 2)
+  fitControl <- trainControl( method = "repeatedcv",number = 5,repeats = 1)
 
   ########### rpart
   model.rpart <- train(classe ~ . ,data=data.train, method="rpart")
+  ggplot(model.rpart)
   testPredict.rpart <- predict(model.rpart,newdata=data.test,na.action=na.pass)
-  sum(summary(testPredict.glm))
+  sum(summary(testPredict.rpart))
   sum(summary(data.test$classe))
-  confusionMatrix(testPredict.glm,data.test$classe)
+  confusionMatrix(testPredict.rpart,data.test$classe)
   #save(model.rpart,"modelRpart.Rmd")
 
   ########### gbm
-  model.gbm <- train(classe ~ ., data.train = training,
+  model.gbm <- train(classe ~ ., data = data.train,
                  method = "gbm", trControl = fitControl,
                  ## This last option is actually one
                  ## for gbm() that passes through
                  verbose = FALSE)
+  ggplot(model.gbm)
   testPredict.gbm <- predict(model.gbm,newdata=data.test,na.action=na.pass)
   sum(summary(testPredict.gbm))
   sum(summary(data.test$classe))
   confusionMatrix(testPredict.gbm,data.test$classe)
   #save(model.rpart,"modelGbm.Rmd")
-                           
+
+  ########### rf
+  model.rf <- train(classe ~ ., data = data.train,
+                 method = "rf", trControl = fitControl)
+  ggplot(model.rf)
+  testPredict.rf <- predict(model.rf,newdata=data.test,na.action=na.pass)
+  sum(summary(testPredict.rf))
+  sum(summary(data.test$classe))
+  confusionMatrix(testPredict.rf,data.test$classe)
+                   
 ```
 
+```{r, echo=FALSE, cache=TRUE} 
+  # load submission data set from local storage
+  data.test.final <- read.csv('pml-testing.csv', na.strings=c("NA","#DIV/0!", ""))
+  data.test.final <- preProcessAttributeClass(data.test.final)
+  # use only rows in which the training data didn't have a NA values
+  data.test.final <- data.test[,colnames(data.train.final)]
+  data.test.final.classe <- data.test.final$classe
+  data.test.final <- data.test.final[,highlyCorDescr]
+  data.test.final$classe <- data.test.final.classe
+  predictfinal <- predict(model.rf, data.test.final, type="class")
+  predictfinal
 
+  # Writing files for submission
+  pml_write_files = function(x){
+    n = length(x)
+    for(i in 1:n){
+      filename = paste0("problem_id_",i,".txt")
+      write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+    }
+  }
+
+  pml_write_files(predictfinal)
+```
