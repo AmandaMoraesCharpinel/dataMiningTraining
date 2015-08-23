@@ -3,6 +3,10 @@ title: "Project"
 author: "Jens Schreiber"
 date: "19. August 2015"
 output: html_document
+pandoc_args: [
+      "+RTS", "-K128m",
+      "-RTS"
+    ]
 ---
 
 
@@ -11,48 +15,96 @@ output: html_document
   library(caret)
   set.seed(123456)
   #df <- read.csv(file="pml-training.csv")
-  
-  #inTrain = createDataPartition(df$classe, p = 1/10)[[1]]
+  # creates randomizes stratified sample of the data into training and test data
+  #inTrain = createDataPartition(df$classe, p = 3/4)[[1]]
   #training = df[inTrain, ]
   #testing = df[-inTrain, ]
   #write.csv(file="training.csv",training)
   #write.csv(file="testing.csv",testing)
+
+   preProcessAttributeClass <- function (data.convert) {
+    classe <- data.convert$classe
+    data.convert <- as.data.frame(sapply(data.convert,as.numeric))
+    data.convert$X.1 <- NULL
+    data.convert$X <- NULL
+    data.convert$user_name <- NULL
+    data.convert$raw_timestamp_part_1 <- NULL
+    data.convert$raw_timestamp_part_2 <- NULL
+    data.convert$cvtd_timestamp <- NULL
+    data.convert$new_window <- NULL
+    data.convert$num_window <- NULL
+    data.convert$classe<-classe
+    data.convert
+  }
 ```
 
-```{r, echo=TRUE, cache=TRUE}
-  #library(doMC)
-  #registerDoMC(2)
-  data.train <- read.csv(file="training.csv")
-##################
-  data.numeric <- sapply( data.train, as.numeric )
-  data.numeric$user_name <- data.train$user_name 
-  data.numeric$cvtd_timestamp <- data.train$cvtd_timestamp
-  data.numeric$classe <- data.train$classe
-  data.train <- data.frame(data.numeric)
 
-#################
- # data.preProc <- preProcess(data.train,method="pca",pcaComp=2)
- # trainc.pc <- predict(data.preProc,data.train)
+
+```{r, echo=FALSE, cache=TRUE}
+  library(corrplot)
+  require(FactoMineR) 
+  library(caret)
+  library(doMC)
+  library(corrplot)
+  registerDoMC(cores = 4)
+
+  data.train <- read.csv(file="training.csv",na.strings=c("NA",""))
+  data.train <- preProcessAttributeClass(data.train)
+  # use only rows which not having any NA values
+  data.train <- data.train[ , ! apply( data.train , 2 , function(x) any(is.na(x)) ) ]
+  data.test <- read.csv(file="testing.csv",na.strings=c("NA",""))  
+  data.test <- preProcessAttributeClass(data.test)
+  # use only rows in which the training data didn't have a NA values
+  data.test <- data.test[,colnames(data.train)]
+
+  #data.cor <- scale(subset( data.train, select = -classe ),center=TRUE,scale=TRUE)
+  data.cor <- subset( data.train, select = -classe )
+  descrCor <- cor(data.cor,use="all.obs")
+  corrplot(descrCor,order="hclust", addCoef.col=NULL,tl.cex=0.1,tl.col="white")
+  highlyCorDescr <- findCorrelation(descrCor, cutoff = .5,    
+                                    names=TRUE)#verbose=TRUE)
+  data.train.classe <- data.train$classe
+  data.train <- data.train[,highlyCorDescr]
+  #data.train$classe <- as.numeric(data.train.classe)
+  data.train$classe <- data.train.classe
+  data.test.classe <- data.test$classe
+  data.test <- data.test[,highlyCorDescr]
+  #data.test$classe <- as.numeric(data.test.classe)
+  data.test$classe <- data.test.classe
+  #data.test <- na.omit(data.test)
   
-  #ctrl <- trainControl(method = "boot",repeats=3)
-  #model.pls<-train(classe ~ ., data=data.train, method="pls", 
-   #                tuneLength=5)
-#  model.glm <- train(classe ~ ., data=data.preProc, method="glm")
- # model.glm
-  #,trControl=ctrl)
-  #data.test <- read.csv(file="testing.csv",500)
-##################
- # data.numeric <- sapply( data.test, as.numeric )
-#  data.numeric$user_name <- data.test$user_name 
- # data.numeric$cvtd_timestamp <- data.test$cvtd_timestamp
-#  data.numeric$classe <- data.test$classe
- # data.test <- data.numeric
-#################
+ 
 
-#  plsClasses <- predict(model.pls, newdata = data.test)
-#  confusionMatrix(data = plsClasses, data.test$classe)
+
+  
+
+  
+
+
 ```
-   
 
+```{r, echo=FALSE, cache=TRUE}   
+  model.glm <- train(classe ~ . ,data=data.train, method="rpart")
+  testPredict.glm <- predict(model.glm,newdata=data.test,na.action=na.pass)
+  sum(summary(testPredict.glm))
+  sum(summary(data.test$classe))
+  confusionMatrix(testPredict.glm,data.test$classe)
+
+  fitControl <- trainControl(## 10-fold CV
+                           method = "repeatedcv",
+                           number = 10,
+                           ## repeated ten times
+                           repeats = 10)
+  model.gbm <- train(classe ~ ., data.train = training,
+                 method = "gbm", trControl = fitControl,
+                 ## This last option is actually one
+                 ## for gbm() that passes through
+                 verbose = FALSE)
+  testPredict.gbm <- predict(model.gbm,newdata=data.test,na.action=na.pass)
+  sum(summary(testPredict.gbm))
+  sum(summary(data.test$classe))
+  confusionMatrix(testPredict.gbm,data.test$classe)
+                           
+```
 
 
