@@ -1,0 +1,142 @@
+---
+title: "Quiz4"
+author: "Jens Schreiber"
+date: "19. August 2015"
+output: html_document
+---
+
+####Question 1
+
+Load the vowel.train and vowel.test data sets: 
+Set the variable y to be a factor variable in both the training and test set. Then set the seed to 33833. Fit (1) a random forest predictor relating the factor variable y to the remaining variables and (2) a boosted predictor using the "gbm" method. Fit these both with the train() command in the caret package. 
+```{r,cache=TRUE}
+library(ElemStatLearn)
+library(caret)
+
+data(vowel.train)
+data(vowel.test) 
+vowel.train$y <- as.factor(vowel.train$y)
+vowel.test$y <- as.factor(vowel.test$y)
+set.seed(33833)
+if(file.exists("modelGbm.rds")) {
+  model.gbm <- readRDS("modelGbm.rds")   
+} else {
+  model.gbm <- train(y ~ . ,data=vowel.train, model="gbm",trControl = trainControl(method = "cv", number = 10))
+  saveRDS(model.gbm,"modelGbm.rds")
+}  
+if(file.exists("modelRf.rds")) {
+    model.rf <- readRDS("modelRf.rds")
+} else {
+  model.rf <- train(y ~ . ,data=vowel.train, model="rf",trControl = trainControl(method = "cv", number = 10))
+  saveRDS(model.rf,"modelRf.rds")
+}
+
+pred.rf <- predict(model.rf,newdata=vowel.test)
+pred.gbm <- predict(model.gbm,newdata=vowel.test)
+
+confusionMatrix(pred.rf,vowel.test$y)$overall[1]
+confusionMatrix(pred.gbm,vowel.test$y)$overall[1]
+confusionMatrix(pred.gbm,pred.rf)$overall[1]
+```
+
+What are the accuracies for the two approaches on the test data set? What is the accuracy among the test set samples where the two methods agree? 
+
+####Question 2
+
+Load the Alzheimer's data using the following commands 
+Set the seed to 62433 and predict diagnosis with all the other variables using a random forest ("rf"), boosted trees ("gbm") and linear discriminant analysis ("lda") model. Stack the predictions together using random forests ("rf"). What is the resulting accuracy on the test set? Is it better or worse than each of the individual predictions? 
+```{r, echo=FALSE,cache=TRUE}
+library(caret)
+library(gbm)
+set.seed(3433)
+library(AppliedPredictiveModeling)
+data(AlzheimerDisease)
+adData = data.frame(diagnosis,predictors)
+inTrain = createDataPartition(adData$diagnosis, p = 3/4)[[1]]
+training = adData[ inTrain,]
+testing = adData[-inTrain,]
+set.seed(62433)
+
+if(file.exists("modelGbm2.rds")) {
+  model.gbm <- readRDS("modelGbm2.rds")   
+} else {
+  model.gbm <- train(diagnosis ~ . ,data=training, model="gbm", trControl = trainControl(method = "cv", number = 10))
+  saveRDS(model.gbm,"modelGbm2.rds")
+}  
+if(file.exists("modelRf2.rds")) {
+    model.rf <- readRDS("modelRf2.rds")
+} else {
+  model.rf <- train(diagnosis ~ . ,data=training, model="rf", trControl = trainControl(method = "cv", number = 10))
+  saveRDS(model.rf,"modelRf2.rds")
+}
+if(file.exists("modelLda2.rds")) {
+    model.lda <- readRDS("modelLda2.rds")
+} else {
+  model.lda <- train(diagnosis ~ . ,data=training, model="lda", trControl = trainControl(method = "cv", number = 10))
+  saveRDS(model.lda,"modelLda2.rds")
+}
+
+pred.rf <- predict(model.rf,newdata=training)
+pred.gbm <- predict(model.gbm,newdata=training)
+pred.lda <- predict(model.lda,newdata=training)
+
+data.predAllTrain <- data.frame(pred.rf,pred.gbm, pred.lda, diagnosis=training$diagnosis)
+
+if(file.exists("modelAll2.rds")) {
+    model.all <- readRDS("modelAll2.rds")
+} else {
+  model.all <- train(diagnosis ~ ., data=data.predAllTrain, model ="gam")
+  saveRDS(model.all,"modelAll2.rds")
+}
+
+
+pred.rf <- predict(model.rf, newdata = testing)
+pred.gbm <- predict(model.gbm, newdata = testing)
+pred.lda <- predict(model.lda, newdata = testing)
+
+data.predAllTest <- data.frame(pred.rf,pred.gbm, pred.lda)
+pred.all <- predict(model.all, newdata = data.predAllTest)
+```
+
+```{r, echo=TRUE,cache=TRUE}
+confusionMatrix(pred.rf,testing$diagnosis)$overall[1]
+confusionMatrix(pred.gbm,testing$diagnosis)$overall[1]
+confusionMatrix(pred.lda,testing$diagnosis)$overall[1]
+confusionMatrix(pred.all,testing$diagnosis)$overall[1]
+
+```
+
+###Question 3
+
+Load the concrete data with the commands: 
+
+```{r, echo=TRUE, cache=TRUE}
+set.seed(3523)
+library(AppliedPredictiveModeling)
+data(concrete)
+inTrain = createDataPartition(concrete$CompressiveStrength, p = 3/4)[[1]]
+training = concrete[ inTrain,]
+testing = concrete[-inTrain,]
+```
+Set the seed to 233 and fit a lasso model to predict Compressive Strength. Which variable is the last coefficient to be set to zero as the penalty increases? (Hint: it may be useful to look up ?plot.enet). 
+
+```{r, echo=FALSE}
+set.seed(233)
+library(glmnet)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+```{r, echo=TRUE}
+sessionInfo()
+```
+
