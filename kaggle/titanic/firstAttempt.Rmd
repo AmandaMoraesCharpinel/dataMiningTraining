@@ -1,0 +1,45 @@
+---
+title: "firstAttempt"
+author: "Jens Schreiber"
+date: "27. Juni 2015"
+output: html_document
+---
+
+
+
+
+```{r, cache=TRUE}
+  as.numeric.factor <- function(x) {as.numeric(levels(x))[x]}
+  test  <- read.csv("train.csv")
+  
+  
+
+  cols2Keep<-c("PassengerId","Survived","Pclass","Sex","SibSp","Parch","Fare","Embarked", "Age")
+  test<-test[cols2Keep]
+  test$Pclass<-as.integer(as.factor(test$Pclass))
+  test$Sex<-as.integer(as.factor(test$Sex))
+  test$Embarked<-as.integer(as.factor(test$Embarked))
+  test$Age<-as.integer(test$Age)#we are losing some information here
+  test$Fare<-as.integer(test$Fare)#we are losing some information here
+  lapply(test,class)
+```
+
+```{r,cache=TRUE}
+  library(corrplot)
+ # corrplot.mixed(cor((test)), order = "AOE")
+  fit.glm  <- glm(Survived ~ Embarked + Pclass + Sex + Age, data=test,
+              family="binomial", na.action=NULL)
+  fit.glm
+
+  fit.rf randomForest(Survived ~ ., 
+                      data=test, ntree=50, norm.votes=FALSE)
+  fit.rf
+```
+
+
+```{r, echo=FALSE}
+    par(mfrow=c(2,2))
+    plot(fit)
+```
+
+

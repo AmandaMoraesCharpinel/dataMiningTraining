@@ -1,0 +1,16 @@
+Z statistic Z=(X'-mu)/(sigma/sqrt(n)) ') for calculating confidence
+intervall, mean is 0 and variance is 0
+
+in case of CLT and normal distribution we calculate the conf. interv.
+with Est +/- qnorm *std error(Est) , Est could be mean, qnorm the
+quantile and 
+
+the stantard error of the mean is 
+sigma(X_strich)) = sigma / sqrt(n), where sigma is the deviation of  a
+single observation
+
+t statistics
+t = (X'-mu)/(s/sqrt(n))')
+conf intervall: Est +/- t-quantile *std error(Est)
+T-Interval:
+X' +/- t_(n-1)*s/sqrt(n) where t_(n-1) is the relevant quantile'

@@ -6,11 +6,14 @@
 # R stuff
 .Rapp.history
 .Rhistory
+*_cache
+*_files
 
 *.swp
 # quizes and assignments
 quizes/
 coursera/gettingAndCleaningData/quizes/*
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
