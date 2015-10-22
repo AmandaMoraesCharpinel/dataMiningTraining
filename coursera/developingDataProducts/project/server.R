@@ -21,6 +21,14 @@ mpgPrediction <- function(hp,wt,cyl,gear,transmission)
 # Define server logic required to plot various variables against mpg
 shinyServer(function(input, output) {
 
+  fitter <- reactive({
+                fit <- lm((mpg ~ hp + cyl + wt + gear + am), data=mtcars)
+            return(fit)
+        })
+        output$Evaluation <- renderTable({
+            summary(fit)
+        })
+  
   # Compute the forumla text in a reactive expression since it is 
   # shared by the output$caption and output$mpgPlot expressions
   formulaText <- reactive({

@@ -2,33 +2,67 @@ Mtcars dataset - Miles per gallon prediction
 ========================================================
 author: Jens Schreiber
 date: 2015-10-25
+font-import: http://fonts.googleapis.com/css?family=Risque
+font-family: 'Risque'
+<style>
+/* slide titles */
+.reveal h3 { 
+  font-size: 50px;
+  color: blue;
+}
+.small-code pre code {
+  font-size: 20px;
+}
+
+/* heading for slides with two hashes ## */
+.reveal .slides section .slideContent h2 {
+   font-size: 20px;
+   font-weight: bold;
+   color: green;
+}
+/* ordered and unordered list styles */
+.reveal ul, 
+.reveal ol {
+    font-size: 30px;
+    color: red;
+    list-style-type: square;
+}
+</style>
+
 
 Agenda
 ========================================================
 
 This pitch covers the following topics
 
-- Bullet 1
-- Bullet 2
-- Bullet 3
+- Summary of mtcars data
+- Boxplot mtcars dataset
+- Regression with mtcars
 
-Slide With Code
+
+Summary mtcars dataset
 ========================================================
-
+class: small-code
 ```{r}
-summary(cars)
+  summary(mtcars)
 ```
 
-Slide With Plot
+Boxplot mtcars dataset
 ========================================================
 
 ```{r, echo=FALSE}
-plot(cars)
+  boxplot(mpg ~ cyl, data=mtcars)
 ```
 
-Slide With Prediction
+Regression with mtcars
 ========================================================
-
-```{r, echo=FALSE}
-plot(cars)
+class: small-code
+```{r, echo=FALSE, cache=TRUE}
+  mpgData <- mtcars;
+  mpgData$am <- factor(mpgData$am, labels = c("Automatic", "Manual"))
+  set.seed(1234);
+```
+```{r, echo=TRUE}
+  fit <- lm(mpg ~ hp + cyl + wt + gear + am, data=mtcars)
+  summary(fit)
 ```
