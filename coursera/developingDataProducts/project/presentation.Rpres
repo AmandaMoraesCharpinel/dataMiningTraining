@@ -2,7 +2,7 @@ Mtcars dataset - Miles per gallon prediction
 ========================================================
 author: Jens Schreiber
 date: 2015-10-25
-font-import: http://fonts.googleapis.com/css?family=Risque
+#font-import: http://fonts.googleapis.com/css?family=Risque
 font-family: 'Risque'
 <style>
 /* slide titles */
@@ -10,6 +10,13 @@ font-family: 'Risque'
   font-size: 50px;
   color: blue;
 }
+
+.footer {
+    color: black; background: #E8E8E8;
+    position: fixed; top: 90%;
+    text-align:center; width:100%;
+}
+
 .small-code pre code {
   font-size: 20px;
 }
