@@ -43,6 +43,7 @@ Agenda
 This pitch covers the following topics
 
 - Summary of mtcars data
+- Histogram mtcars dataset
 - Boxplot mtcars dataset
 - Regression with mtcars
 
@@ -59,6 +60,12 @@ Boxplot mtcars dataset
 
 ```{r, echo=FALSE}
   boxplot(mpg ~ cyl, data=mtcars)
+```
+
+Histogram mtcars dataset
+========================================================
+```{r, echo=FALSE}
+  hist(mtcars$mpg)
 ```
 
 Regression with mtcars

@@ -43,6 +43,7 @@ Agenda
 This pitch covers the following topics
 
 - Summary of mtcars data
+- Histogram mtcars dataset
 - Boxplot mtcars dataset
 - Regression with mtcars
 
@@ -83,6 +84,10 @@ Boxplot mtcars dataset
 ========================================================
 
 ![plot of chunk unnamed-chunk-2](presentation-figure/unnamed-chunk-2-1.png) 
+
+Histogram mtcars dataset
+========================================================
+![plot of chunk unnamed-chunk-3](presentation-figure/unnamed-chunk-3-1.png) 
 
 Regression with mtcars
 ========================================================
